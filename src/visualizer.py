@@ -181,8 +181,7 @@ class Visualizer:
                 output_path, 
                 format='png',
                 dpi=self.dpi,
-                bbox_inches='tight',  # Trim extra whitespace
-                optimize=True         # Apply optimization
+                bbox_inches='tight'  # Trim extra whitespace
             )
             self.logger.info(f"Visualization saved to {output_path}")
             
