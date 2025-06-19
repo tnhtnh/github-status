@@ -1,0 +1,20 @@
+
+ Agent Logs: 
+  [info] [storage] Initialized storage at '/Users/tnh/Library/Application Support/Kiro/User/globalStorage/kiro.kiroagent/a9f9d01d3fdc9acec32ff7df7c2510d9' 
+[info] Congratulations, "Kiro" is now active! 
+ ---
+ Raw LLM Logs: 
+ 
+ ---
+ Shared Logs: 
+ [info] Loading telemetry with client attributes {"KiroClientVersion":"0.0","machineId":"d601279b0a5163f0968930e703df5af7d64f5aa539b2ef1801dded8a31d35d1e","platform":"darwin-24.6.0","channel":"stable","version":"0.0.27"}
+[info] Docs indexing completed 
+[info] [RepoMapIndex] Starting initial indexing... 
+[info] [RepoMapIndex] Finding files in workspace folder: github-status 
+[info] [RepoMapIndex] Found 4 files in github-status 
+[info] [RepoMapIndex] Found 4 files to index 
+[info] [RepoMapIndex] Operation completed in 0.01s 
+ ---
+ Q Request Logs: 
+ 
+ 

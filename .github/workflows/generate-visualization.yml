@@ -1,0 +1,104 @@
+name: Generate GitHub Incidents Visualization
+
+on:
+  schedule:
+    - cron: '0 0 1 * *'  # Run monthly on the 1st day
+  workflow_dispatch:      # Allow manual triggering
+    inputs:
+      output_filename:
+        description: 'Output filename for the visualization'
+        required: false
+        default: 'github_incidents_visualization.png'
+      log_level:
+        description: 'Log level for the script'
+        required: false
+        default: 'INFO'
+        type: choice
+        options:
+          - DEBUG
+          - INFO
+          - WARNING
+          - ERROR
+          - CRITICAL
+      dpi:
+        description: 'DPI (dots per inch) for the output image'
+        required: false
+        default: '150'
+        type: string
+      fig_width:
+        description: 'Width of the figure in inches'
+        required: false
+        default: '12'
+        type: string
+      fig_height:
+        description: 'Height of the figure in inches'
+        required: false
+        default: '8'
+        type: string
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Generate visualization
+        id: generate
+        run: |
+          mkdir -p output
+          mkdir -p .cache
+          OUTPUT_FILE="output/${{ github.event.inputs.output_filename || 'github_incidents_visualization.png' }}"
+          echo "Running visualization generator with output file: $OUTPUT_FILE"
+          python src/main.py \
+            --output "$OUTPUT_FILE" \
+            --log-level ${{ github.event.inputs.log_level || 'INFO' }} \
+            --cache-dir .cache \
+            --cache-ttl 86400 \
+            --dpi ${{ github.event.inputs.dpi || '150' }} \
+            --fig-width ${{ github.event.inputs.fig_width || '12' }} \
+            --fig-height ${{ github.event.inputs.fig_height || '8' }}
+          echo "output_file=$OUTPUT_FILE" >> $GITHUB_OUTPUT
+        continue-on-error: false
+        
+      - name: Upload visualization as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: incidents-visualization
+          path: ${{ steps.generate.outputs.output_file }}
+          retention-days: 90
+          
+      - name: Cache API data
+        uses: actions/cache@v3
+        with:
+          path: .cache
+          key: github-incidents-cache-${{ github.run_id }}
+          restore-keys: |
+            github-incidents-cache-
+          
+      - name: Save visualization to repository
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        run: |
+          # Create a dated copy of the visualization
+          DATED_FILE="output/github_incidents_$(date +'%Y%m%d').png"
+          cp ${{ steps.generate.outputs.output_file }} "$DATED_FILE"
+          
+          # Configure git
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          # Commit and push the visualization
+          git add output/
+          git commit -m "Update GitHub incidents visualization [skip ci]" || echo "No changes to commit"
+          git push
