@@ -76,7 +76,7 @@ jobs:
         continue-on-error: false
         
       - name: Upload visualization as artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: incidents-visualization
           path: ${{ steps.generate.outputs.output_file }}
